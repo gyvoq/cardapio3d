@@ -92,14 +92,9 @@ const LOJA={
   extra:'Entrega grátis até 3 km'
 };
 const SIZES=[{n:'Broto',d:25},{n:'Média',d:30},{n:'Grande',d:35},{n:'Gigante',d:40}]; // diâmetro real em cm
-const CATS=['Tradicionais','Especiais','Doces'];
+const CATS=['Tradicionais'];
 const ITENS=[
- {id:1,cat:'Tradicionais',kind:'margherita',modelo:true,foto:PIZZA_MODEL.thumb,nome:'Margherita',desc:'Molho de tomate, muçarela, tomate fresco e manjericão',preco:[32,42,52,62]},
- {id:2,cat:'Tradicionais',kind:'calabresa',nome:'Calabresa',desc:'Calabresa fatiada, cebola e orégano',preco:[30,40,50,60]},
- {id:3,cat:'Especiais',kind:'portuguesa',nome:'Portuguesa',desc:'Presunto, ovo, azeitona, cebola e muçarela',preco:[36,46,56,66]},
- {id:4,cat:'Especiais',kind:'queijos',nome:'Quatro Queijos',desc:'Muçarela, provolone, gorgonzola e parmesão',preco:[38,48,58,68]},
- {id:5,cat:'Especiais',kind:'frango',nome:'Frango com Catupiry',desc:'Frango desfiado, catupiry cremoso e orégano',preco:[36,46,56,66]},
- {id:6,cat:'Doces',kind:'doce',nome:'Chocolate com Morango',desc:'Chocolate ao leite, morangos e granulado',preco:[34,44,54,64]}
+ {id:1,cat:'Tradicionais',kind:'margherita',modelo:true,foto:PIZZA_MODEL.thumb,nome:'Margherita',desc:'Molho de tomate, muçarela, tomate fresco e manjericão',preco:[32,42,52,62]}
 ];
 /* ========================================================================= */
 ITENS.forEach(i=>i.sel=2);
@@ -414,11 +409,11 @@ function logoEl(el){
   if(LOJA.logo){el.innerHTML=`<img src="${LOJA.logo}" alt="Logo">`;return}
   el.textContent=LOJA.nome.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
 }
-const wa=i=>`https://wa.me/${LOJA.whats}?text=${encodeURIComponent(`Olá! Quero uma pizza ${i.nome} ${SIZES[i.sel].n} (${SIZES[i.sel].d} cm) - ${fmt(i.preco[i.sel])}`)}`;
 const card=i=>`<article class="card"><div class="top"><img src="${i.foto||thumb(i.kind)}" alt="${i.nome}"><div><h3>${i.nome}</h3><p>${i.desc}</p></div></div>
 <div class="sizes">${SIZES.map((z,k)=>`<button class="sz${k===i.sel?' on':''}" data-i="${i.id}" data-s="${k}"><b>${z.n}</b><span>${z.d} cm</span><em>${fmt(i.preco[k])}</em></button>`).join('')}</div>
-<div class="acts"><button class="go" data-ar="${i.id}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 10L3 7m9 5 9-5m-9 5v10"/></svg>Ver em tamanho real</button><a class="ghost" href="${wa(i)}" target="_blank" rel="noopener">Pedir</a></div></article>`;
+<div class="acts"><button class="go" data-ar="${i.id}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 10L3 7m9 5 9-5m-9 5v10"/></svg>Ver em tamanho real</button></div></article>`;
 function render(){
+  $('seg').style.display=CATS.length>1?'':'none';
   $('seg').innerHTML=CATS.map(c=>`<button class="${c===cat?'on':''}" data-c="${c}">${c}</button>`).join('');
   $('list').innerHTML=ITENS.filter(i=>i.cat===cat).map(card).join('');
 }
