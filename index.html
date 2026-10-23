@@ -3,153 +3,188 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Pizza em AR</title>
+<meta name="theme-color" content="#000000">
+<title>Cardápio</title>
 <style>
-:root{--bg:#1b1410;--panel:rgba(27,20,16,.82);--text:#fff6ea;--muted:#d8c3a8;--accent:#e8532b;--chip:#3a2b21;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+:root{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--sep:rgba(84,84,88,.55);--tx:#f5f5f7;--tx2:#98989f;--gold:#d4af37;--gold2:#f3d98b;--grad:linear-gradient(135deg,#f3d98b,#d4af37 55%,#a87f1e);color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:rgba(0,0,0,.72);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);z-index:10}
 canvas.xr{position:fixed;inset:0;z-index:0}
-#start{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;background:radial-gradient(circle,#3a2418,#150e0a);overflow:auto}
-#start h1{margin:0;font-size:28px}
-#start p{margin:0;max-width:36ch;color:var(--muted);line-height:1.45}
-#pick{width:100%;max-width:420px}
-.btn{border:0;border-radius:14px;padding:14px 22px;font-size:17px;font-weight:700;background:var(--accent);color:#fff}
-.btn[disabled]{opacity:.4}
-#msg{font-size:14px;color:#ffb4a0;max-width:36ch;line-height:1.4}
-#ar{display:none;position:fixed;inset:0;z-index:2;pointer-events:none;color:var(--text)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 40px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(0,0,0,.72);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-bottom:.5px solid var(--sep)}
+nav .logo{width:30px;height:30px;font-size:13px}
+nav b{font-size:17px;font-weight:600;letter-spacing:-.02em}
+.logo{flex:0 0 auto;width:84px;height:84px;border-radius:24%;background:var(--grad);color:#000;display:grid;place-items:center;font-weight:800;font-size:30px;letter-spacing:-.04em;overflow:hidden;box-shadow:0 0 0 .5px rgba(255,255,255,.2) inset}
+.logo img{width:100%;height:100%;object-fit:cover}
+.hero{padding:28px 0 8px}
+.hero h1{margin:16px 0 4px;font-size:40px;line-height:1.05;letter-spacing:-.03em;font-weight:700}
+.gold{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin:0;color:var(--tx2);font-size:17px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.pill{font-size:13px;color:var(--gold2);background:rgba(212,175,55,.12);border:.5px solid rgba(212,175,55,.35);padding:6px 12px;border-radius:999px}
+h2.big{font-size:28px;letter-spacing:-.025em;margin:28px 0 12px}
+.seg{display:flex;gap:2px;padding:2px;background:var(--card);border-radius:10px}
+.seg button{flex:1;border:0;background:none;color:var(--tx);font:inherit;font-size:13px;font-weight:500;padding:8px 4px;border-radius:8px;transition:.2s}
+.seg button.on{background:var(--card2);box-shadow:0 1px 3px rgba(0,0,0,.5);color:var(--gold2)}
+.card{background:var(--card);border-radius:22px;padding:16px;margin:14px 0;box-shadow:0 0 0 .5px rgba(255,255,255,.06) inset}
+.top{display:flex;gap:14px;align-items:center}
+.top img{width:88px;height:88px;border-radius:50%;flex:0 0 auto;box-shadow:0 6px 18px rgba(0,0,0,.6),0 0 0 2px rgba(212,175,55,.5)}
+.top h3{margin:0 0 4px;font-size:20px;letter-spacing:-.02em}
+.top p{margin:0;color:var(--tx2);font-size:14px;line-height:1.35}
+.sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:14px 0}
+.sz{border:0;border-radius:12px;background:var(--card2);color:var(--tx);padding:8px 2px;font:inherit;display:flex;flex-direction:column;align-items:center;gap:1px;transition:.2s}
+.sz b{font-size:13px;font-weight:600}.sz span{font-size:11px;color:var(--tx2)}.sz em{font-style:normal;font-size:13px;font-weight:600;color:var(--gold2)}
+.sz.on{background:var(--grad);color:#000}.sz.on span,.sz.on em{color:#000}
+.acts{display:flex;gap:8px}
+.acts button,.acts a{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;padding:14px;font:inherit;font-size:15px;font-weight:600;text-decoration:none;transition:transform .15s}
+.acts button:active,.acts a:active{transform:scale(.97)}
+.acts .go{flex:2;background:var(--grad);color:#000}
+.acts .ghost{background:var(--card2);color:var(--gold2)}
+footer{margin-top:32px;padding-top:18px;border-top:.5px solid var(--sep);color:var(--tx2);font-size:13px;line-height:1.6;text-align:center}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:rgba(44,44,46,.95);backdrop-filter:blur(20px);color:var(--tx);padding:12px 18px;border-radius:14px;font-size:14px;max-width:86%;text-align:center;z-index:30;transition:.3s;pointer-events:none}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#ar{display:none;position:fixed;inset:0;z-index:20;pointer-events:none;color:var(--tx)}
 #ar>*{pointer-events:auto}
-#hint{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:12px;right:12px;text-align:center;background:var(--panel);padding:10px 14px;border-radius:14px;font-size:14px}
-#exit{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));right:12px;border:0;border-radius:999px;padding:8px 14px;background:var(--panel);color:var(--text)}
-#hud{position:absolute;left:0;right:0;bottom:0;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px));background:var(--panel)}
-.row{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
-.chip{flex:0 0 auto;border:0;border-radius:999px;padding:9px 14px;background:var(--chip);color:var(--text);font-size:14px}
-.chip.on{background:var(--accent)}
-.info{font-size:14px;color:var(--muted);margin:6px 2px 0}
+#hint{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:12px;right:12px;text-align:center;background:rgba(28,28,30,.85);backdrop-filter:blur(20px);padding:12px 14px;border-radius:16px;font-size:14px}
+#exit{position:absolute;top:calc(68px + env(safe-area-inset-top,0px));right:12px;border:0;border-radius:999px;padding:8px 14px;background:rgba(28,28,30,.85);color:var(--tx);font:inherit;font-size:14px}
+#hud{position:absolute;left:0;right:0;bottom:0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));background:rgba(28,28,30,.88);backdrop-filter:blur(24px);border-radius:24px 24px 0 0}
+#hud h4{margin:0 0 10px;font-size:17px}
+#hud .sizes{margin:0}
 </style>
 </head>
 <body>
-<div id="start">
-  <div style="font-size:56px">🍕</div>
-  <h1>Pizza em AR</h1>
-  <p>Escolha a pizza e coloque ela em tamanho real na sua mesa, usando a câmera do celular.</p>
-  <div id="pick">
-    <div class="row" id="types0"></div>
-    <div class="row" id="sizes0"></div>
-    <div class="info" id="info0"></div>
-  </div>
-  <button class="btn" id="go" disabled>Ver na minha mesa</button>
-  <div id="msg">Verificando suporte a AR…</div>
+<nav><div class="logo" id="navlogo"></div><b id="navname"></b></nav>
+<div class="wrap">
+  <header class="hero">
+    <div class="logo" id="logo"></div>
+    <h1 id="nome"></h1>
+    <p id="slogan"></p>
+    <div class="pills" id="pills"></div>
+  </header>
+  <h2 class="big">Cardápio</h2>
+  <div class="seg" id="seg"></div>
+  <main id="list"></main>
+  <footer id="foot"></footer>
 </div>
+<div id="toast"></div>
 
 <div id="ar">
   <div id="hint">Aponte para a mesa e toque para colocar a pizza</div>
   <button id="exit">✕ Sair</button>
-  <div id="hud">
-    <div class="row" id="types"></div>
-    <div class="row" id="sizes"></div>
-    <div class="info" id="info"></div>
-  </div>
+  <div id="hud"><h4 id="hname"></h4><div class="sizes" id="hsizes"></div></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-const TYPES=[
- {id:'margherita',n:'Margherita',d:'Molho, muçarela, tomate e manjericão'},
- {id:'calabresa',n:'Calabresa',d:'Calabresa fatiada e cebola'},
- {id:'portuguesa',n:'Portuguesa',d:'Presunto, ovo, azeitona e cebola'},
- {id:'queijos',n:'Quatro queijos',d:'Muçarela, provolone, gorgonzola e parmesão'}
+/* =====================  ✏️ EDITE AQUI PARA CADA LOJA  ===================== */
+const LOJA={
+  nome:'Pizzaria Sua Marca',
+  slogan:'Massa artesanal e forno a lenha',
+  logo:'',                      // URL ou data:image da logo. Vazio = monograma dourado automático
+  whats:'5538999999999',        // DDI + DDD + número
+  horario:'Ter a Dom · 18h às 23h30',
+  endereco:'Rua Exemplo, 123 · Centro',
+  extra:'Entrega grátis até 3 km'
+};
+const SIZES=[{n:'Broto',d:25},{n:'Média',d:30},{n:'Grande',d:35},{n:'Gigante',d:40}]; // diâmetro real em cm
+const CATS=['Tradicionais','Especiais','Doces'];
+const ITENS=[
+ {id:1,cat:'Tradicionais',kind:'margherita',nome:'Margherita',desc:'Molho de tomate, muçarela, tomate fresco e manjericão',preco:[32,42,52,62]},
+ {id:2,cat:'Tradicionais',kind:'calabresa',nome:'Calabresa',desc:'Calabresa fatiada, cebola e orégano',preco:[30,40,50,60]},
+ {id:3,cat:'Especiais',kind:'portuguesa',nome:'Portuguesa',desc:'Presunto, ovo, azeitona, cebola e muçarela',preco:[36,46,56,66]},
+ {id:4,cat:'Especiais',kind:'queijos',nome:'Quatro Queijos',desc:'Muçarela, provolone, gorgonzola e parmesão',preco:[38,48,58,68]},
+ {id:5,cat:'Especiais',kind:'frango',nome:'Frango com Catupiry',desc:'Frango desfiado, catupiry cremoso e orégano',preco:[36,46,56,66]},
+ {id:6,cat:'Doces',kind:'doce',nome:'Chocolate com Morango',desc:'Chocolate ao leite, morangos e granulado',preco:[34,44,54,64]}
 ];
-const SIZES=[{n:'Broto',d:25},{n:'Média',d:30},{n:'Grande',d:35},{n:'Gigante',d:40}];
-let type=TYPES[0],size=SIZES[2],mode=null;
+/* ========================================================================= */
+ITENS.forEach(i=>i.sel=2);
+let cat=CATS[0],mode=null,cur=null;
 const $=id=>document.getElementById(id);
+const fmt=v=>'R$ '+v.toFixed(2).replace('.',',');
 
 /* ---------- textura da pizza ---------- */
-const cvCache={},texCache={};
+const cvCache={},texCache={},thumbs={};
 function rng(s){return()=>(s=(s*16807)%2147483647)/2147483647}
-function canvasFor(t){
-  if(cvCache[t.id])return cvCache[t.id];
+function canvasFor(k){
+  if(cvCache[k])return cvCache[k];
   const c=document.createElement('canvas');c.width=c.height=512;
   const g=c.getContext('2d');g.translate(256,256);g.scale(5.12,5.12);
-  const r=rng(t.id.length*977+13);
+  const r=rng(k.length*977+13);
   const circ=(x,y,rad,f)=>{g.beginPath();g.arc(x,y,rad,0,6.2832);g.fillStyle=f;g.fill()};
   const ell=(x,y,rx,ry,f)=>{g.beginPath();g.ellipse(x,y,rx,ry,r()*3.14,0,6.2832);g.fillStyle=f;g.fill()};
   const ring=(x,y,rad,col)=>{g.beginPath();g.arc(x,y,rad,0,6.2832);g.strokeStyle=col;g.lineWidth=1.2;g.stroke()};
   const rep=(n,f)=>{for(let i=0;i<n;i++){const a=r()*6.2832,d=Math.sqrt(r())*37;f(Math.cos(a)*d,Math.sin(a)*d,i)}};
   g.fillStyle='#d9923f';g.fillRect(-50,-50,100,100);
   circ(0,0,50,'#d9923f');
-  circ(0,0,43,t.id==='margherita'?'#e0442a':'#f1bf4c');
-  if(t.id==='margherita'){
-    rep(14,(x,y)=>ell(x,y,6+r()*4,5+r()*3,'#fff3d6'));
-    rep(8,(x,y)=>ell(x,y,4,2,'#2f8a3b'));
-  }else if(t.id==='calabresa'){
-    rep(26,(x,y)=>{circ(x,y,4.2,'#b3322a');circ(x+1,y-1,1,'#7a1d18')});
-    rep(12,(x,y)=>ring(x,y,4,'#f4ecff'));
-  }else if(t.id==='portuguesa'){
-    rep(12,(x,y)=>ell(x,y,4,3,'#f0a0a0'));
-    rep(10,(x,y)=>ring(x,y,4,'#e6d2f5'));
-    rep(4,(x,y)=>{circ(x,y,6,'#fff');circ(x,y,2.6,'#f5b81c')});
-    rep(12,(x,y)=>{circ(x,y,2.4,'#2a2330');circ(x,y,.9,'#f1bf4c')});
+  circ(0,0,43,k==='margherita'?'#e0442a':k==='doce'?'#4a2a1a':'#f1bf4c');
+  if(k==='margherita'){
+    rep(14,(x,y)=>ell(x,y,6+r()*4,5+r()*3,'#fff3d6'));rep(8,(x,y)=>ell(x,y,4,2,'#2f8a3b'));
+  }else if(k==='calabresa'){
+    rep(26,(x,y)=>{circ(x,y,4.2,'#b3322a');circ(x+1,y-1,1,'#7a1d18')});rep(12,(x,y)=>ring(x,y,4,'#f4ecff'));
+  }else if(k==='portuguesa'){
+    rep(12,(x,y)=>ell(x,y,4,3,'#f0a0a0'));rep(10,(x,y)=>ring(x,y,4,'#e6d2f5'));
+    rep(4,(x,y)=>{circ(x,y,6,'#fff');circ(x,y,2.6,'#f5b81c')});rep(12,(x,y)=>{circ(x,y,2.4,'#2a2330');circ(x,y,.9,'#f1bf4c')});
+  }else if(k==='frango'){
+    rep(16,(x,y)=>ell(x,y,5,3.5,'#e8c28a'));rep(12,(x,y)=>circ(x,y,3.4,'#fffaf0'));rep(20,(x,y)=>circ(x,y,.7,'#2f8a3b'));
+  }else if(k==='doce'){
+    rep(40,(x,y,i)=>circ(x,y,.9,['#fff','#f06292','#ffd54f','#81d4fa'][i%4]));
+    rep(10,(x,y)=>{circ(x,y,4.6,'#d32f2f');circ(x-1.2,y-1.2,1,'rgba(255,255,255,.6)')});
   }else{
     const col=['#fff3c8','#f6dc8c','#c9d6e8','#f3e6c0'];
-    rep(22,(x,y,i)=>ell(x,y,5+r()*4,4+r()*3,col[i%4]));
-    rep(8,(x,y)=>circ(x,y,1.8,'#6d8fb8'));
+    rep(22,(x,y,i)=>ell(x,y,5+r()*4,4+r()*3,col[i%4]));rep(8,(x,y)=>circ(x,y,1.8,'#6d8fb8'));
   }
   g.strokeStyle='rgba(59,35,18,.45)';g.lineWidth=.6;
   for(let i=0;i<8;i++){const a=i*Math.PI/4;g.beginPath();g.moveTo(0,0);g.lineTo(Math.cos(a)*50,Math.sin(a)*50);g.stroke()}
-  return cvCache[t.id]=c;
+  return cvCache[k]=c;
 }
-function texFor(t){return texCache[t.id]||(texCache[t.id]=new THREE.CanvasTexture(canvasFor(t)))}
+const texFor=k=>texCache[k]||(texCache[k]=new THREE.CanvasTexture(canvasFor(k)));
+const thumb=k=>thumbs[k]||(thumbs[k]=canvasFor(k).toDataURL('image/jpeg',.85));
 
-/* ---------- iPhone: gera USDZ e abre o AR Quick Look ---------- */
+/* ---------- iPhone: USDZ + AR Quick Look ---------- */
 function crc32(u){let crc=0xFFFFFFFF,c;for(let i=0;i<u.length;i++){c=(crc^u[i])&255;for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1;crc=(crc>>>8)^c}return(crc^0xFFFFFFFF)>>>0}
 function makeZip(files){
   const enc=new TextEncoder(),parts=[],cd=[];let off=0;
   for(const f of files){
     const nm=enc.encode(f.name),crc=crc32(f.data),n=f.data.length;
-    let pad=(64-(off+30+nm.length)%64)%64;if(pad&&pad<4)pad+=64; // dados alinhados em 64 bytes (exigido pelo USDZ)
+    let pad=(64-(off+30+nm.length)%64)%64;if(pad&&pad<4)pad+=64;
     const hb=new Uint8Array(30+nm.length+pad),h=new DataView(hb.buffer);
     h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(12,0x21,true);
     h.setUint32(14,crc,true);h.setUint32(18,n,true);h.setUint32(22,n,true);
-    h.setUint16(26,nm.length,true);h.setUint16(28,pad,true);
-    hb.set(nm,30);
+    h.setUint16(26,nm.length,true);h.setUint16(28,pad,true);hb.set(nm,30);
     if(pad){h.setUint16(30+nm.length,0xFFFF,true);h.setUint16(32+nm.length,pad-4,true)}
     parts.push(hb,f.data);cd.push({nm,crc,n,off});off+=hb.length+n;
   }
-  const cdStart=off;
+  const cs=off;
   for(const e of cd){
     const b=new Uint8Array(46+e.nm.length),h=new DataView(b.buffer);
     h.setUint32(0,0x02014b50,true);h.setUint16(4,20,true);h.setUint16(6,20,true);h.setUint16(14,0x21,true);
     h.setUint32(16,e.crc,true);h.setUint32(20,e.n,true);h.setUint32(24,e.n,true);
-    h.setUint16(28,e.nm.length,true);h.setUint32(42,e.off,true);b.set(e.nm,46);
-    parts.push(b);off+=b.length;
+    h.setUint16(28,e.nm.length,true);h.setUint32(42,e.off,true);b.set(e.nm,46);parts.push(b);off+=b.length;
   }
   const end=new Uint8Array(22),eh=new DataView(end.buffer);
   eh.setUint32(0,0x06054b50,true);eh.setUint16(8,cd.length,true);eh.setUint16(10,cd.length,true);
-  eh.setUint32(12,off-cdStart,true);eh.setUint32(16,cdStart,true);parts.push(end);
+  eh.setUint32(12,off-cs,true);eh.setUint32(16,cs,true);parts.push(end);
   const out=new Uint8Array(parts.reduce((s,p)=>s+p.length,0));let o=0;
-  for(const p of parts){out.set(p,o);o+=p.length}
-  return out;
+  for(const p of parts){out.set(p,o);o+=p.length}return out;
 }
 function usda(R,H,S=64){
-  const P=a=>'['+a.map(v=>'('+v.map(n=>+n.toFixed(5)).join(', ')+')').join(', ')+']';
-  const I=a=>'['+a.join(', ')+']';
+  const P=a=>'['+a.map(v=>'('+v.map(n=>+n.toFixed(5)).join(', ')+')').join(', ')+']',I=a=>'['+a.join(', ')+']';
   const ang=i=>i/S*Math.PI*2;
-  // topo
   const tp=[[0,H,0]],tn=[[0,1,0]],tuv=[[.5,.5]],ti=[];
   for(let i=0;i<=S;i++){const a=ang(i);tp.push([Math.cos(a)*R,H,-Math.sin(a)*R]);tn.push([0,1,0]);tuv.push([.5+Math.cos(a)/2,.5+Math.sin(a)/2])}
   for(let i=0;i<S;i++)ti.push(0,i+1,i+2);
-  // lateral + fundo
   const bp=[],bn=[],bi=[];
-  for(let i=0;i<=S;i++){const a=ang(i),c=Math.cos(a),s=-Math.sin(a);bp.push([c*R,H,s*R]);bn.push([c,0,s])}
-  for(let i=0;i<=S;i++){const a=ang(i),c=Math.cos(a),s=-Math.sin(a);bp.push([c*R,0,s*R]);bn.push([c,0,s])}
+  for(const y of [H,0])for(let i=0;i<=S;i++){const a=ang(i),c=Math.cos(a),s=-Math.sin(a);bp.push([c*R,y,s*R]);bn.push([c,0,s])}
   for(let i=0;i<S;i++)bi.push(i,S+1+i,S+2+i,i,S+2+i,i+1);
-  const cIdx=bp.length;bp.push([0,0,0]);bn.push([0,-1,0]);
+  const ci=bp.length;bp.push([0,0,0]);bn.push([0,-1,0]);
   for(let i=0;i<=S;i++){const a=ang(i);bp.push([Math.cos(a)*R,0,-Math.sin(a)*R]);bn.push([0,-1,0])}
-  for(let i=0;i<S;i++)bi.push(cIdx,cIdx+2+i,cIdx+1+i);
-  const mesh=(name,cnt,idx,pts,nrm,uv,mat)=>`
+  for(let i=0;i<S;i++)bi.push(ci,ci+2+i,ci+1+i);
+  const mesh=(name,n,idx,pts,nrm,uv,mat)=>`
   def Mesh "${name}"
   {
-    int[] faceVertexCounts = ${I(Array(cnt).fill(3))}
+    int[] faceVertexCounts = ${I(Array(n).fill(3))}
     int[] faceVertexIndices = ${I(idx)}
     point3f[] points = ${P(pts)}
     normal3f[] normals = ${P(nrm)} (
@@ -216,81 +251,55 @@ def Xform "Pizza"
 }
 `;
 }
-async function openQuickLook(){
-  const b=$('go'),old=b.textContent;b.disabled=true;b.textContent='Preparando a pizza…';
+async function openQuickLook(i){
   try{
-    const blob=await new Promise(r=>canvasFor(type).toBlob(r,'image/png'));
+    toast('Preparando a pizza…');
+    const blob=await new Promise(r=>canvasFor(i.kind).toBlob(r,'image/png'));
     const png=new Uint8Array(await blob.arrayBuffer());
-    const d=size.d/100; // diâmetro real em metros
+    const d=SIZES[i.sel].d/100;
     const zip=makeZip([{name:'pizza.usda',data:new TextEncoder().encode(usda(d/2,0.02))},{name:'tex.png',data:png}]);
     const url=URL.createObjectURL(new Blob([zip],{type:'model/vnd.usdz+zip'}))+'#allowsContentScaling=0';
     const a=document.createElement('a');a.rel='ar';a.href=url;a.appendChild(document.createElement('img'));a.click();
-  }catch(e){$('msg').textContent='Não consegui preparar o AR. Abra este link direto no Safari.'}
-  b.disabled=false;b.textContent=old;
+  }catch(e){toast('Não consegui abrir o AR. Abra este link direto no Safari.')}
 }
 
-/* ---------- Android: cena WebXR ---------- */
+/* ---------- Android: WebXR ---------- */
 let renderer,scene,camera,pizza,topMat,reticle,hitSource=null,refSpace=null,session=null;
 function init(){
   renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
   renderer.setPixelRatio(devicePixelRatio);renderer.setSize(innerWidth,innerHeight);
   renderer.xr.enabled=true;renderer.domElement.className='xr';document.body.appendChild(renderer.domElement);
-  scene=new THREE.Scene();
-  camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.01,20);
+  scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.01,20);
   scene.add(new THREE.HemisphereLight(0xffffff,0x887766,1.1));
   const dl=new THREE.DirectionalLight(0xffffff,.6);dl.position.set(1,3,1);scene.add(dl);
   pizza=new THREE.Group();const H=.04;
-  topMat=new THREE.MeshStandardMaterial({map:texFor(type),roughness:.8});
+  topMat=new THREE.MeshStandardMaterial({roughness:.8});
   const side=new THREE.MeshStandardMaterial({color:0xd9923f,roughness:.9}),bot=new THREE.MeshStandardMaterial({color:0xb9762c});
-  const body=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,H,64),[side,topMat,bot]);
-  body.position.y=H/2;pizza.add(body);
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,H,64),[side,topMat,bot]);body.position.y=H/2;pizza.add(body);
   const sc=document.createElement('canvas');sc.width=sc.height=128;
   const sg=sc.getContext('2d'),gr=sg.createRadialGradient(64,64,30,64,64,64);
   gr.addColorStop(0,'rgba(0,0,0,.45)');gr.addColorStop(1,'rgba(0,0,0,0)');sg.fillStyle=gr;sg.fillRect(0,0,128,128);
   const sh=new THREE.Mesh(new THREE.PlaneGeometry(1.3,1.3),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sc),transparent:true,depthWrite:false}));
-  sh.rotation.x=-Math.PI/2;sh.position.y=.002;pizza.add(sh);
-  pizza.visible=false;scene.add(pizza);
-  reticle=new THREE.Mesh(new THREE.RingGeometry(.12,.15,32).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff}));
+  sh.rotation.x=-Math.PI/2;sh.position.y=.002;pizza.add(sh);pizza.visible=false;scene.add(pizza);
+  reticle=new THREE.Mesh(new THREE.RingGeometry(.12,.15,32).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xd4af37}));
   reticle.matrixAutoUpdate=false;reticle.visible=false;scene.add(reticle);
-  apply();
 }
-function apply(){
-  const t=`${type.n} · Ø ${size.d} cm — ${type.d}`;
-  $('info').textContent=t;$('info0').textContent=t;
-  if(!pizza)return;
-  topMat.map=texFor(type);topMat.needsUpdate=true;pizza.scale.setScalar(size.d/100);
+function applyXR(){
+  topMat.map=texFor(cur.kind);topMat.needsUpdate=true;pizza.scale.setScalar(SIZES[cur.sel].d/100);
+  $('hname').textContent=`${cur.nome} · Ø ${SIZES[cur.sel].d} cm`;
+  $('hsizes').innerHTML=SIZES.map((z,k)=>`<button class="sz${k===cur.sel?' on':''}" data-x="${k}"><b>${z.n}</b><span>${z.d} cm</span><em>${fmt(cur.preco[k])}</em></button>`).join('');
 }
-
-/* ---------- UI ---------- */
-function chips(id,list,cur,on,lab){
-  const box=$(id);box.innerHTML='';
-  list.forEach(i=>{const b=document.createElement('button');b.className='chip'+(i===cur()?' on':'');
-    b.textContent=lab(i);b.onclick=()=>{on(i);renderChips();apply()};box.appendChild(b)});
-}
-function renderChips(){
-  for(const s of ['','0']){
-    chips('types'+s,TYPES,()=>type,t=>type=t,i=>i.n);
-    chips('sizes'+s,SIZES,()=>size,s2=>size=s2,i=>`${i.n} ${i.d} cm`);
-  }
-}
-renderChips();apply();
-$('ar').addEventListener('beforexrselect',e=>e.preventDefault());
-
-async function startXR(){
+async function startXR(i){
+  cur=i;
   try{
     if(!renderer)init();
     $('ar').style.display='block';
     session=await navigator.xr.requestSession('immersive-ar',{requiredFeatures:['hit-test'],optionalFeatures:['dom-overlay','local-floor'],domOverlay:{root:$('ar')}});
-  }catch(e){
-    $('ar').style.display='none';
-    $('msg').textContent='Não foi possível iniciar o AR. Abra este link no Chrome do Android, direto no navegador.';return;
-  }
-  renderer.xr.setReferenceSpaceType('local');
-  await renderer.xr.setSession(session);
+  }catch(e){$('ar').style.display='none';toast('Não foi possível iniciar o AR. Abra no Chrome do Android, direto no navegador.');return}
+  applyXR();
+  renderer.xr.setReferenceSpaceType('local');await renderer.xr.setSession(session);
   refSpace=renderer.xr.getReferenceSpace();
-  const viewer=await session.requestReferenceSpace('viewer');
-  hitSource=await session.requestHitTestSource({space:viewer});
-  $('start').style.display='none';
+  hitSource=await session.requestHitTestSource({space:await session.requestReferenceSpace('viewer')});
   session.addEventListener('select',()=>{
     if(!reticle.visible)return;
     pizza.position.setFromMatrixPosition(reticle.matrix);pizza.visible=true;
@@ -298,31 +307,58 @@ async function startXR(){
   });
   session.addEventListener('end',()=>{
     hitSource=null;session=null;pizza.visible=false;renderer.setAnimationLoop(null);
-    $('ar').style.display='none';$('start').style.display='flex';
-    $('hint').textContent='Aponte para a mesa e toque para colocar a pizza';
+    $('ar').style.display='none';$('hint').textContent='Aponte para a mesa e toque para colocar a pizza';render();
   });
   renderer.setAnimationLoop((t,frame)=>{
     if(frame&&hitSource){
-      const hits=frame.getHitTestResults(hitSource);
-      if(hits.length){const p=hits[0].getPose(refSpace);reticle.visible=true;reticle.matrix.fromArray(p.transform.matrix)}
-      else reticle.visible=false;
+      const h=frame.getHitTestResults(hitSource);
+      if(h.length){reticle.visible=true;reticle.matrix.fromArray(h[0].getPose(refSpace).transform.matrix)}else reticle.visible=false;
     }
     renderer.render(scene,camera);
   });
 }
+
+/* ---------- interface do cardápio ---------- */
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2800)}
+function logoEl(el){
+  if(LOJA.logo){el.innerHTML=`<img src="${LOJA.logo}" alt="Logo">`;return}
+  el.textContent=LOJA.nome.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+const wa=i=>`https://wa.me/${LOJA.whats}?text=${encodeURIComponent(`Olá! Quero uma pizza ${i.nome} ${SIZES[i.sel].n} (${SIZES[i.sel].d} cm) - ${fmt(i.preco[i.sel])}`)}`;
+const card=i=>`<article class="card"><div class="top"><img src="${thumb(i.kind)}" alt="${i.nome}"><div><h3>${i.nome}</h3><p>${i.desc}</p></div></div>
+<div class="sizes">${SIZES.map((z,k)=>`<button class="sz${k===i.sel?' on':''}" data-i="${i.id}" data-s="${k}"><b>${z.n}</b><span>${z.d} cm</span><em>${fmt(i.preco[k])}</em></button>`).join('')}</div>
+<div class="acts"><button class="go" data-ar="${i.id}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 10L3 7m9 5 9-5m-9 5v10"/></svg>Ver em tamanho real</button><a class="ghost" href="${wa(i)}" target="_blank" rel="noopener">Pedir</a></div></article>`;
+function render(){
+  $('seg').innerHTML=CATS.map(c=>`<button class="${c===cat?'on':''}" data-c="${c}">${c}</button>`).join('');
+  $('list').innerHTML=ITENS.filter(i=>i.cat===cat).map(card).join('');
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.c){cat=b.dataset.c;render();return}
+  if(b.dataset.x!==undefined){cur.sel=+b.dataset.x;applyXR();return}
+  if(b.dataset.s!==undefined){ITENS.find(i=>i.id==b.dataset.i).sel=+b.dataset.s;render();return}
+  if(b.dataset.ar){
+    const i=ITENS.find(i=>i.id==b.dataset.ar);
+    if(mode==='ios')openQuickLook(i);else if(mode==='xr')startXR(i);
+    else toast('Abra no celular: Safari no iPhone ou Chrome no Android.');
+  }
+});
 $('exit').onclick=()=>session&&session.end();
-$('go').onclick=()=>mode==='ios'?openQuickLook():startXR();
+$('ar').addEventListener('beforexrselect',e=>e.preventDefault());
+
+document.title='Cardápio · '+LOJA.nome;
+logoEl($('logo'));logoEl($('navlogo'));
+$('navname').textContent=LOJA.nome;
+$('nome').innerHTML=`<span class="gold">${LOJA.nome}</span>`;
+$('slogan').textContent=LOJA.slogan;
+$('pills').innerHTML=[LOJA.horario,LOJA.extra].filter(Boolean).map(t=>`<span class="pill">${t}</span>`).join('');
+$('foot').innerHTML=`${LOJA.endereco}<br>${LOJA.horario}<br><a style="color:var(--gold2)" href="https://wa.me/${LOJA.whats}" target="_blank" rel="noopener">Falar no WhatsApp</a>`;
+render();
 
 (async()=>{
-  const m=$('msg');
-  let ql=false;
-  try{ql=document.createElement('a').relList.supports('ar')}catch(e){}
-  if(ql){mode='ios';m.style.color='var(--muted)';m.textContent='Dica: abra no Safari. A pizza abre em tamanho real; mova com o dedo e gire com dois dedos.';$('go').disabled=false;return}
-  if(!navigator.xr){m.textContent='Este navegador não suporta AR. No iPhone use o Safari; no Android use o Chrome.';return}
-  try{
-    if(await navigator.xr.isSessionSupported('immersive-ar')){mode='xr';m.textContent='';$('go').disabled=false}
-    else m.textContent='Este aparelho não suporta AR na web. Use o Chrome em um Android com ARCore ou o Safari no iPhone.';
-  }catch(e){m.textContent='Não consegui verificar o suporte a AR neste navegador.'}
+  let ql=false;try{ql=document.createElement('a').relList.supports('ar')}catch(e){}
+  if(ql){mode='ios';return}
+  try{if(navigator.xr&&await navigator.xr.isSessionSupported('immersive-ar'))mode='xr'}catch(e){}
 })();
 </script>
 </body>
