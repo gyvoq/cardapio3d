@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pizza em tamanho real</title>
+<style>
+:root{--bg:#1b1410;--panel:rgba(27,20,16,.82);--text:#fff6ea;--muted:#d8c3a8;--accent:#e8532b;--chip:#3a2b21;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1410}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:none}
+#bgfallback{position:absolute;inset:0;background:repeating-linear-gradient(45deg,#6b4a30 0 40px,#7a5638 40px 80px)}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+#pizza{position:absolute;left:0;top:0;filter:drop-shadow(0 8px 10px rgba(0,0,0,.55));cursor:grab;display:none}
+#card{position:absolute;display:none;border:3px dashed #fff;border-radius:8px;background:rgba(255,255,255,.12);pointer-events:none;color:#fff;font-size:12px;text-align:center;align-items:center;justify-content:center}
+#hud{position:absolute;left:0;right:0;bottom:0;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px));background:var(--panel);backdrop-filter:blur(8px);display:none}
+.row{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
+.chip{flex:0 0 auto;border:0;border-radius:999px;padding:9px 14px;background:var(--chip);color:var(--text);font-size:14px}
+.chip.on{background:var(--accent)}
+#info{font-size:14px;color:var(--muted);margin:6px 2px}
+#cal{display:none}
+#cal input{width:100%}
+#top{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:8px;right:8px;display:none;justify-content:space-between;align-items:center;gap:8px}
+#top span{background:var(--panel);padding:8px 12px;border-radius:999px;font-weight:600}
+#start{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:radial-gradient(circle,#3a2418,#150e0a)}
+#start h1{margin:0;font-size:28px}
+#start p{margin:0;max-width:34ch;color:var(--muted);line-height:1.45}
+.btn{border:0;border-radius:14px;padding:14px 22px;font-size:17px;font-weight:700;background:var(--accent);color:#fff}
+#err{color:#ffb4a0;font-size:13px}
+</style>
+</head>
+<body>
+<div id="bgfallback"></div>
+<video id="video" playsinline muted autoplay></video>
+<div id="card">Cartão<br>8,56 × 5,4 cm</div>
+<svg id="pizza" xmlns="http://www.w3.org/2000/svg"></svg>
+
+<div id="top"><span id="label">Margherita</span><button class="chip" id="calbtn">📏 Calibrar</button></div>
+
+<div id="hud">
+  <div id="cal">
+    <div id="info">Coloque um cartão de crédito na mesa, onde quer ver a pizza, e ajuste até a moldura branca cobrir o cartão.</div>
+    <input type="range" id="scale" min="6" max="60" step="0.1" value="20">
+    <button class="chip on" id="done" style="margin-top:8px">Pronto</button>
+  </div>
+  <div id="menu">
+    <div class="row" id="types"></div>
+    <div class="row" id="sizes"></div>
+    <div id="info2" class="info" style="font-size:14px;color:var(--muted);margin:6px 2px"></div>
+  </div>
+</div>
+
+<div id="start">
+  <div style="font-size:64px">🍕</div>
+  <h1>Pizza em tamanho real</h1>
+  <p>Veja como a pizza vai ficar na sua mesa. Abra a câmera, calibre com um cartão de crédito e arraste a pizza para onde quiser.</p>
+  <button class="btn" id="go">Abrir câmera</button>
+  <button class="chip" id="nocam">Continuar sem câmera</button>
+  <div id="err"></div>
+</div>
+
+<script>
+const TYPES=[
+ {id:'margherita',n:'Margherita',d:'Molho, muçarela, tomate e manjericão'},
+ {id:'calabresa',n:'Calabresa',d:'Calabresa fatiada e cebola'},
+ {id:'portuguesa',n:'Portuguesa',d:'Presunto, ovo, azeitona e cebola'},
+ {id:'queijos',n:'Quatro queijos',d:'Muçarela, provolone, gorgonzola e parmesão'}
+];
+const SIZES=[{n:'Broto',d:25},{n:'Média',d:30},{n:'Grande',d:35},{n:'Gigante',d:40}];
+let type=TYPES[0],size=SIZES[2],ppc=20,pos={x:innerWidth/2,y:innerHeight*0.4};
+const $=id=>document.getElementById(id);
+const pz=$('pizza');
+
+function rng(s){return()=>(s=(s*16807)%2147483647)/2147483647}
+function el(t,a){return `<${t} ${Object.entries(a).map(([k,v])=>k+'="'+v+'"').join(' ')}/>`}
+function build(t){
+  const r=rng(t.id.length*977+13);let o='';
+  o+=el('circle',{r:50,fill:'#d9923f'})+el('circle',{r:46,fill:'#c58232',opacity:.5});
+  o+=el('circle',{r:43,fill:t.id==='margherita'?'#e0442a':'#f1bf4c'});
+  const pol=(max)=>{const a=r()*6.283,d=Math.sqrt(r())*max;return[Math.cos(a)*d,Math.sin(a)*d]};
+  const rep=(n,f)=>{for(let i=0;i<n;i++)o+=f(...pol(37),i)};
+  if(t.id==='margherita'){
+    rep(14,(x,y)=>el('ellipse',{cx:x,cy:y,rx:6+r()*4,ry:5+r()*3,fill:'#fff3d6',opacity:.95}));
+    rep(8,(x,y)=>el('ellipse',{cx:x,cy:y,rx:4,ry:2,fill:'#2f8a3b',transform:`rotate(${r()*180} ${x} ${y})`}));
+  }else if(t.id==='calabresa'){
+    rep(26,(x,y)=>el('circle',{cx:x,cy:y,r:4.2,fill:'#b3322a'})+el('circle',{cx:x+1,cy:y-1,r:1,fill:'#7a1d18'}));
+    rep(12,(x,y)=>el('circle',{cx:x,cy:y,r:4,fill:'none',stroke:'#f4ecff',opacity:.85,'stroke-width':1.2}));
+  }else if(t.id==='portuguesa'){
+    rep(12,(x,y)=>el('rect',{x:x-4,y:y-3,width:8,height:6,rx:2,fill:'#f0a0a0',transform:`rotate(${r()*180} ${x} ${y})`}));
+    rep(10,(x,y)=>el('circle',{cx:x,cy:y,r:4,fill:'none',stroke:'#e6d2f5','stroke-width':1.3}));
+    rep(4,(x,y)=>el('circle',{cx:x,cy:y,r:6,fill:'#fff'})+el('circle',{cx:x,cy:y,r:2.6,fill:'#f5b81c'}));
+    rep(12,(x,y)=>el('circle',{cx:x,cy:y,r:2.4,fill:'#2a2330'})+el('circle',{cx:x,cy:y,r:.9,fill:'#f1bf4c'}));
+  }else{
+    const c=['#fff3c8','#f6dc8c','#c9d6e8','#f3e6c0'];
+    rep(22,(x,y,i)=>el('ellipse',{cx:x,cy:y,rx:5+r()*4,ry:4+r()*3,fill:c[i%4],opacity:.95}));
+    rep(8,(x,y)=>el('circle',{cx:x,cy:y,r:1.8,fill:'#6d8fb8'}));
+  }
+  for(let i=0;i<8;i++){const a=i*Math.PI/4;o+=el('line',{x1:0,y1:0,x2:Math.cos(a)*50,y2:Math.sin(a)*50,stroke:'#3b2312','stroke-width':.6,opacity:.45})}
+  return o;
+}
+
+function render(){
+  const px=size.d*ppc;
+  pz.setAttribute('viewBox','-50 -50 100 100');
+  pz.setAttribute('width',px);pz.setAttribute('height',px);
+  pz.innerHTML=build(type);
+  pz.style.transform=`translate(${pos.x-px/2}px,${pos.y-px/2}px)`;
+  $('label').textContent=`${type.n} · ${size.n}`;
+  $('info2').textContent=`Ø ${size.d} cm · ${type.d}`;
+  const w=8.56*ppc,h=5.4*ppc,c=$('card');
+  c.style.width=w+'px';c.style.height=h+'px';
+  c.style.left=(innerWidth/2-w/2)+'px';c.style.top=(innerHeight*0.35-h/2)+'px';
+}
+function chips(id,list,cur,on){
+  const box=$(id);box.innerHTML='';
+  list.forEach(i=>{const b=document.createElement('button');b.className='chip'+(i===cur()?' on':'');
+    b.textContent=i.d&&i.n&&id==='sizes'?`${i.n} ${i.d}cm`:i.n;
+    b.onclick=()=>{on(i);chips(id,list,cur,on);render()};box.appendChild(b)});
+}
+chips('types',TYPES,()=>type,t=>type=t);
+chips('sizes',SIZES,()=>size,s=>size=s);
+
+function enter(){
+  $('start').style.display='none';
+  ['hud','pizza'].forEach(i=>$(i).style.display='block');
+  $('top').style.display='flex';
+  render();
+}
+$('go').onclick=async()=>{
+  try{
+    const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+    const v=$('video');v.srcObject=s;v.style.display='block';$('bgfallback').style.display='none';
+    await v.play().catch(()=>{});enter();
+  }catch(e){$('err').textContent='Não consegui abrir a câmera. Verifique a permissão do navegador ou continue sem câmera.'}
+};
+$('nocam').onclick=enter;
+
+$('calbtn').onclick=()=>{$('cal').style.display='block';$('menu').style.display='none';$('card').style.display='flex';$('pizza').style.opacity=.55};
+$('done').onclick=()=>{$('cal').style.display='none';$('menu').style.display='block';$('card').style.display='none';$('pizza').style.opacity=1};
+$('scale').oninput=e=>{ppc=parseFloat(e.target.value);render()};
+
+let drag=null;
+pz.addEventListener('pointerdown',e=>{drag={dx:e.clientX-pos.x,dy:e.clientY-pos.y};pz.setPointerCapture(e.pointerId);pz.style.cursor='grabbing'});
+pz.addEventListener('pointermove',e=>{if(!drag)return;pos.x=e.clientX-drag.dx;pos.y=e.clientY-drag.dy;render()});
+pz.addEventListener('pointerup',()=>{drag=null;pz.style.cursor='grab'});
+addEventListener('resize',render);
+</script>
+</body>
+</html>
